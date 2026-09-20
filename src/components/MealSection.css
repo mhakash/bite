@@ -21,10 +21,6 @@
   color: var(--cream);
 }
 
-.meal-section__icon {
-  font-size: 15px;
-}
-
 .meal-section__right {
   display: flex;
   align-items: center;

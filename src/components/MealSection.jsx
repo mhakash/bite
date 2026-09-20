@@ -1,9 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { round, nutrientsForEntry, gramsForEntry } from '../utils/nutrition'
 import IconButton from './IconButton'
+import MealIcon from './MealIcon'
 import './MealSection.css'
-
-const ICONS = { sunrise: '🌅', sun: '☀️', moon: '🌙', sparkle: '✨' }
 
 export default function MealSection({ meal, entries, foods, onAdd, onRemove }) {
   const items = entries
@@ -16,7 +15,7 @@ export default function MealSection({ meal, entries, foods, onAdd, onRemove }) {
     <section className="meal-section">
       <div className="meal-section__header">
         <div className="meal-section__title">
-          <span className="meal-section__icon">{ICONS[meal.icon]}</span>
+          <MealIcon icon={meal.icon} />
           <h3>{meal.label}</h3>
         </div>
         <div className="meal-section__right">

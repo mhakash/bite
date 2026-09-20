@@ -1,16 +1,47 @@
-# React + Vite
+# 🍊 Bite — daily nutrition tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A fast, local-first calorie and macro tracker built with React + Vite. No accounts, no backend — everything is stored in the browser.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Daily logging** — log foods into Breakfast, Lunch, Dinner, and Snacks, with a running calorie ring and protein/carbs/fat progress bars against your goals.
+- **Food library** — build up a personal library of foods with per-portion gram weights and full macro/micronutrient breakdowns.
+- **Custom amounts & quantities** — log by a saved portion, a quantity multiplier, or a custom gram amount.
+- **JSON food import** — paste or import structured JSON to add foods in bulk (see the in-app prompt helper).
+- **Water tracking** and a **weekly trend** chart of calories/macros over time.
+- **Backup & transfer** — export/import a single day's log or your whole food library as JSON files.
+- **Goals & settings** — set calorie, protein, carb, fat, and water goals.
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the Oxlint configuration
+Other scripts:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm run build    # production build
+npm run preview  # preview the production build
+npm run lint     # oxlint
+```
+
+## Tech stack
+
+- [React](https://react.dev/) 19 + [Vite](https://vite.dev/)
+- [Framer Motion](https://www.framer.com/motion/) for sheet/transition animations
+- [Recharts](https://recharts.org/) for the weekly trend chart
+- Plain CSS per component, no CSS framework
+
+## Project structure
+
+```
+src/
+  components/   UI components (sheets, cards, shared IconButton, etc.)
+  context/      App-wide state (AppContext): foods, entries, goals, day
+  data/         Nutrient definitions and seed foods
+  utils/        Date helpers, nutrition math, JSON import/export
+```
+
+Data persists to `localStorage` — there is no server component.
