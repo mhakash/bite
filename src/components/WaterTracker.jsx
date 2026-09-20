@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import IconButton from './IconButton'
 import './WaterTracker.css'
 
 const STEP = 250
@@ -16,12 +17,8 @@ export default function WaterTracker({ ml, goalMl, onChange }) {
           <span className="water-card__sub mono">{ml} / {goalMl} ml</span>
         </div>
         <div className="water-card__buttons">
-          <button onClick={() => onChange(Math.max(0, ml - STEP))} aria-label="Remove water">
-            −
-          </button>
-          <button onClick={() => onChange(ml + STEP)} aria-label="Add water">
-            +
-          </button>
+          <IconButton icon="minus" onClick={() => onChange(Math.max(0, ml - STEP))} aria-label="Remove water" />
+          <IconButton icon="plus" onClick={() => onChange(ml + STEP)} aria-label="Add water" />
         </div>
       </div>
       <div className="water-cups">

@@ -36,27 +36,6 @@
   color: var(--muted);
 }
 
-.meal-section__add {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1px solid var(--hairline-strong);
-  background: var(--surface-2);
-  color: var(--cream);
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease, transform 0.15s ease;
-}
-
-.meal-section__add:hover {
-  background: var(--surface-3);
-}
-.meal-section__add:active {
-  transform: scale(0.9);
-}
-
 .meal-section__empty {
   font-size: 13px;
   color: var(--muted-2);

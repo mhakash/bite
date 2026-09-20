@@ -153,9 +153,13 @@
   border: none;
   width: 80px;
   padding: 9px 0;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--cream);
   text-align: right;
+}
+
+.custom-grams-input input:focus-visible {
+  outline: none;
 }
 
 .custom-grams-input__unit {
@@ -169,18 +173,6 @@
   gap: 14px;
 }
 
-.qty-stepper button {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--hairline-strong);
-  background: var(--surface-2);
-  color: var(--cream);
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
 .qty-stepper span {
   min-width: 32px;

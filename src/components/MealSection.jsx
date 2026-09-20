@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { round, nutrientsForEntry, gramsForEntry } from '../utils/nutrition'
+import IconButton from './IconButton'
 import './MealSection.css'
 
 const ICONS = { sunrise: '🌅', sun: '☀️', moon: '🌙', sparkle: '✨' }
@@ -20,9 +21,7 @@ export default function MealSection({ meal, entries, foods, onAdd, onRemove }) {
         </div>
         <div className="meal-section__right">
           {mealCalories > 0 && <span className="meal-section__cals mono">{round(mealCalories)} kcal</span>}
-          <button className="meal-section__add" onClick={() => onAdd(meal.id)} aria-label={`Add to ${meal.label}`}>
-            +
-          </button>
+          <IconButton icon="plus" size={26} onClick={() => onAdd(meal.id)} aria-label={`Add to ${meal.label}`} />
         </div>
       </div>
 

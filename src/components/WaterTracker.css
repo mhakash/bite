@@ -28,19 +28,6 @@
   gap: 8px;
 }
 
-.water-card__buttons button {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--hairline-strong);
-  background: var(--surface-2);
-  color: var(--cream);
-  font-size: 17px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .water-cups {
   display: flex;
   gap: 8px;

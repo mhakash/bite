@@ -24,6 +24,12 @@
   border-radius: 12px;
   padding: 0 12px;
   width: 130px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-field__input:focus-within {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.25);
 }
 
 .settings-field__input input {
@@ -31,8 +37,12 @@
   border: none;
   width: 100%;
   padding: 10px 4px 10px 0;
-  font-size: 14px;
+  font-size: 16px;
   text-align: right;
+}
+
+.settings-field__input input:focus-visible {
+  outline: none;
 }
 
 .settings-field__unit {
@@ -71,14 +81,6 @@
   padding: 10px 12px;
   font-size: 12.5px;
   color: var(--sky);
-}
-
-.data-notice button {
-  background: none;
-  border: none;
-  color: var(--sky);
-  font-size: 16px;
-  flex-shrink: 0;
 }
 
 .data-row {

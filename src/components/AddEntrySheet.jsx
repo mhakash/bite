@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Sheet from './Sheet'
+import IconButton from './IconButton'
 import { round, scaleNutrients } from '../utils/nutrition'
 import './AddEntrySheet.css'
 
@@ -135,9 +136,17 @@ export default function AddEntrySheet({ open, meal, foods, recentFoodIds, onClos
             <div className="add-entry-detail__qty">
               <span>Quantity</span>
               <div className="qty-stepper">
-                <button onClick={() => setQuantity((q) => Math.max(0.25, round(q - 0.25, 2)))}>−</button>
+                <IconButton
+                  icon="minus"
+                  aria-label="Decrease quantity"
+                  onClick={() => setQuantity((q) => Math.max(0.25, round(q - 0.25, 2)))}
+                />
                 <span className="mono">{quantity}</span>
-                <button onClick={() => setQuantity((q) => round(q + 0.25, 2))}>+</button>
+                <IconButton
+                  icon="plus"
+                  aria-label="Increase quantity"
+                  onClick={() => setQuantity((q) => round(q + 0.25, 2))}
+                />
               </div>
             </div>
           )}

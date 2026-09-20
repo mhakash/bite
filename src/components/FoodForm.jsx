@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Sheet from './Sheet'
+import IconButton from './IconButton'
 import { MACRO_NUTRIENTS, MICRO_NUTRIENTS, emptyNutrientValues } from '../data/nutrients'
 import { buildFoodJsonPrompt, parseFoodJson } from '../utils/foodJson'
 import './FoodForm.css'
@@ -221,9 +222,14 @@ export default function FoodForm({ open, onClose, onSave, onImportMany }) {
                   value={p.grams}
                   onChange={(e) => updatePortion(p.id, { grams: e.target.value })}
                 />
-                <button className="portion-row__remove" onClick={() => removePortion(p.id)} disabled={portions.length === 1}>
-                  ×
-                </button>
+                <IconButton
+                  icon="close"
+                  variant="subtle"
+                  size={28}
+                  onClick={() => removePortion(p.id)}
+                  disabled={portions.length === 1}
+                  aria-label="Remove portion"
+                />
               </div>
             ))}
             <button className="field__add-link" onClick={addPortion}>

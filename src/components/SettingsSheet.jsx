@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Sheet from './Sheet'
+import IconButton from './IconButton'
 import { formatDisplayDate } from '../utils/date'
 import './SettingsSheet.css'
 
@@ -86,9 +87,14 @@ export default function SettingsSheet({
           {notice && (
             <div className="data-notice">
               <span>{notice}</span>
-              <button onClick={onDismissNotice} aria-label="Dismiss">
-                ×
-              </button>
+              <IconButton
+                icon="close"
+                variant="inline"
+                size={20}
+                style={{ color: 'var(--sky)' }}
+                onClick={onDismissNotice}
+                aria-label="Dismiss"
+              />
             </div>
           )}
 

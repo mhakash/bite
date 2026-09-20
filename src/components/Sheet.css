@@ -46,19 +46,6 @@
   color: var(--cream);
 }
 
-.sheet__close {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  background: var(--surface-2);
-  color: var(--cream);
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .sheet__body {
   overflow-y: auto;
   padding: 4px 20px 20px;

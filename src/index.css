@@ -81,6 +81,22 @@ input, select, textarea {
   color: inherit;
 }
 
+/* Prevent iOS Safari from zooming the page when a text/number input is focused */
+input, select, textarea {
+  font-size: 16px;
+}
+
+/* Native number spin buttons render inconsistently (often vertically
+   off-center) across browsers, so inputs get custom controls instead. */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 ::selection {
   background: var(--mango);
   color: var(--ink);

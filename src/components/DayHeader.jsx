@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { addDaysISO, formatDisplayDate, todayISO } from '../utils/date'
+import IconButton from './IconButton'
 import './DayHeader.css'
 
 export default function DayHeader({ date, onChange, onOpenSettings, streak }) {
@@ -18,16 +19,18 @@ export default function DayHeader({ date, onChange, onOpenSettings, streak }) {
               🔥 {streak}
             </span>
           )}
-          <button className="icon-btn" onClick={onOpenSettings} aria-label="Settings">
-            ⚙️
-          </button>
+          <IconButton icon="settings" size={38} onClick={onOpenSettings} aria-label="Settings" />
         </div>
       </div>
 
       <div className="day-switcher">
-        <button className="day-switcher__arrow" onClick={() => onChange(addDaysISO(date, -1))} aria-label="Previous day">
-          ‹
-        </button>
+        <IconButton
+          icon="chevronLeft"
+          variant="ghost"
+          size={32}
+          onClick={() => onChange(addDaysISO(date, -1))}
+          aria-label="Previous day"
+        />
         <div className="day-switcher__label-wrap">
           <AnimatePresence mode="wait">
             <motion.span
@@ -42,14 +45,14 @@ export default function DayHeader({ date, onChange, onOpenSettings, streak }) {
             </motion.span>
           </AnimatePresence>
         </div>
-        <button
-          className="day-switcher__arrow"
+        <IconButton
+          icon="chevronRight"
+          variant="ghost"
+          size={32}
           onClick={() => onChange(addDaysISO(date, 1))}
           aria-label="Next day"
           disabled={isToday}
-        >
-          ›
-        </button>
+        />
       </div>
     </header>
   )

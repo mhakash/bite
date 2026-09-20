@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
+import IconButton from './IconButton'
 import './Sheet.css'
 
 export default function Sheet({ open, onClose, title, children, footer }) {
@@ -24,9 +25,7 @@ export default function Sheet({ open, onClose, title, children, footer }) {
             <div className="sheet__grip" />
             <div className="sheet__header">
               <h3>{title}</h3>
-              <button className="sheet__close" onClick={onClose} aria-label="Close">
-                ×
-              </button>
+              <IconButton icon="close" variant="plain" onClick={onClose} aria-label="Close" />
             </div>
             <div className="sheet__body">{children}</div>
             {footer && <div className="sheet__footer">{footer}</div>}

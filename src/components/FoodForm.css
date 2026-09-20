@@ -121,9 +121,16 @@
   border: 1px solid var(--hairline-strong);
   border-radius: 12px;
   padding: 11px 13px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--cream);
   width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input:focus-visible {
+  outline: none;
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.25);
 }
 
 .field input::placeholder {
@@ -151,20 +158,6 @@
   grid-template-columns: 1fr 80px 30px;
   gap: 8px;
   align-items: center;
-}
-
-.portion-row__remove {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: var(--surface-2);
-  color: var(--muted);
-  font-size: 15px;
-}
-
-.portion-row__remove:disabled {
-  opacity: 0.3;
 }
 
 .field__add-link {
@@ -202,6 +195,12 @@
   border: 1px solid var(--hairline-strong);
   border-radius: 10px;
   padding: 0 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nutrient-input__row:focus-within {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.25);
 }
 
 .nutrient-input__row input {
@@ -209,7 +208,11 @@
   border: none;
   padding: 9px 4px 9px 0;
   width: 100%;
-  font-size: 13.5px;
+  font-size: 16px;
+}
+
+.nutrient-input__row input:focus-visible {
+  outline: none;
 }
 
 .nutrient-input__unit {
