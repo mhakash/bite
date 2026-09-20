@@ -4,8 +4,19 @@ import { MACRO_NUTRIENTS, MICRO_NUTRIENTS } from '../data/nutrients'
 import { round } from '../utils/nutrition'
 import './NutritionFactsCard.css'
 
-function Row({ def, value }) {
-  const pct = def.dv ? Math.min(999, (value / def.dv) * 100) : 0
+// Nutrients the user sets a personal goal for in Settings — % Daily Value
+// for these is measured against that goal instead of the FDA 2,000kcal
+// reference diet.
+const GOAL_KEYS = {
+  calories: 'calorieGoal',
+  protein: 'proteinGoal',
+  carbs: 'carbsGoal',
+  fat: 'fatGoal',
+}
+
+function Row({ def, value, goal }) {
+  const dv = goal || def.dv
+  const pct = dv ? Math.min(999, (value / dv) * 100) : 0
   return (
     <div className="nf-row">
       <div className="nf-row__text">
@@ -28,10 +39,11 @@ function Row({ def, value }) {
   )
 }
 
-export default function NutritionFactsCard({ totals }) {
+export default function NutritionFactsCard({ totals, goals = {} }) {
   const [tab, setTab] = useState('macro')
 
   const defs = tab === 'macro' ? MACRO_NUTRIENTS : MICRO_NUTRIENTS
+  const usingPersonalGoals = tab === 'macro' && MACRO_NUTRIENTS.some((def) => GOAL_KEYS[def.key] && goals[GOAL_KEYS[def.key]])
 
   return (
     <div className="nf-card">
@@ -59,13 +71,17 @@ export default function NutritionFactsCard({ totals }) {
           transition={{ duration: 0.2 }}
         >
           {defs.map((def) => (
-            <Row key={def.key} def={def} value={totals[def.key] || 0} />
+            <Row key={def.key} def={def} value={totals[def.key] || 0} goal={goals[GOAL_KEYS[def.key]]} />
           ))}
         </motion.div>
       </AnimatePresence>
 
       <div className="nf-card__rule" />
-      <p className="nf-card__footnote">% Daily Value based on a 2,000 calorie reference diet.</p>
+      <p className="nf-card__footnote">
+        {usingPersonalGoals
+          ? '% Daily Value based on your calorie & macro goals; other nutrients use a 2,000 calorie reference diet.'
+          : '% Daily Value based on a 2,000 calorie reference diet.'}
+      </p>
     </div>
   )
 }

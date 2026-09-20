@@ -64,12 +64,13 @@ type Settings struct {
 	Name        string  `json:"name"`
 }
 
+// Bootstrap carries the data needed on every page load: the food library,
+// meal sections, and settings. Log entries and water are fetched separately,
+// scoped to whatever date range the UI is actually showing.
 type Bootstrap struct {
-	Foods    []Food             `json:"foods"`
-	Meals    []Meal             `json:"meals"`
-	Logs     []LogEntry         `json:"logs"`
-	Water    map[string]float64 `json:"water"`
-	Settings Settings           `json:"settings"`
+	Foods    []Food   `json:"foods"`
+	Meals    []Meal   `json:"meals"`
+	Settings Settings `json:"settings"`
 }
 
 var DefaultSettings = Settings{

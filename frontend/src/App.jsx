@@ -16,11 +16,10 @@ import { buildDayExport, buildFoodLibraryExport, downloadJson, parseDayImport, r
 import { parseFoodJson } from './utils/foodJson'
 import './App.css'
 
-function computeStreak(logs, fromISO) {
-  const datesWithEntries = new Set(logs.map((e) => e.date))
+function computeStreak(loggedDates, fromISO) {
   let streak = 0
   let cursor = fromISO
-  while (datesWithEntries.has(cursor)) {
+  while (loggedDates.has(cursor)) {
     streak += 1
     cursor = addDaysISO(cursor, -1)
   }
@@ -29,7 +28,7 @@ function computeStreak(logs, fromISO) {
 
 function TrackerScreen() {
   const {
-    foods, logs, meals, settings, water, selectedDate,
+    foods, logs, loggedDates, meals, settings, water, selectedDate,
     addLogEntry, removeLogEntry, addFood, addFoods, updateSettings, setWaterForDate, setSelectedDate, copyDay,
     importDayData, addMealType, updateMealType, deleteMealType, logout,
   } = useApp()
@@ -61,7 +60,7 @@ function TrackerScreen() {
     return seen
   }, [logs])
 
-  const streak = useMemo(() => computeStreak(logs, todayISO()), [logs])
+  const streak = useMemo(() => computeStreak(loggedDates, todayISO()), [loggedDates])
   const yesterdayEntries = useMemo(
     () => logs.filter((e) => e.date === addDaysISO(selectedDate, -1)),
     [logs, selectedDate],
@@ -103,7 +102,7 @@ function TrackerScreen() {
   }
 
   function handleExportDay() {
-    const data = buildDayExport(selectedDate, dayEntries, foods, water[selectedDate])
+    const data = buildDayExport(selectedDate, dayEntries, foods, water)
     downloadJson(`bite-day-${selectedDate}.json`, data)
   }
 
@@ -164,12 +163,12 @@ function TrackerScreen() {
       </div>
 
       <WaterTracker
-        ml={water[selectedDate] || 0}
+        ml={water}
         goalMl={settings.waterGoalMl}
         onChange={(ml) => setWaterForDate(selectedDate, ml)}
       />
 
-      <NutritionFactsCard totals={totals} />
+      <NutritionFactsCard totals={totals} goals={settings} />
 
       <WeeklyTrend
         logs={logs}

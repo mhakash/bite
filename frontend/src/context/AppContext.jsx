@@ -1,9 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '../api/client'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import { todayISO } from '../utils/date'
+import { addDaysISO, todayISO } from '../utils/date'
 
 const AppContext = createContext(null)
+
+const TREND_DAYS = 7
 
 const EMPTY_SETTINGS = {
   calorieGoal: 2000,
@@ -18,30 +21,17 @@ export function AppProvider({ children }) {
   // 'checking' while we try the refresh cookie on load, then 'authed' or 'anon'.
   const [authStatus, setAuthStatus] = useState('checking')
   const [authError, setAuthError] = useState('')
-
-  const [foods, setFoods] = useState([])
-  const [logs, setLogs] = useState([])
-  const [meals, setMeals] = useState([])
-  const [settings, setSettings] = useState(EMPTY_SETTINGS)
-  const [water, setWater] = useState({})
   const [selectedDate, setSelectedDate] = useLocalStorage('ct_selected_date', todayISO())
 
-  const loadBootstrap = useCallback(async () => {
-    const data = await api.getBootstrap()
-    setFoods(data.foods || [])
-    setMeals(data.meals || [])
-    setLogs(data.logs || [])
-    setWater(data.water || {})
-    setSettings(data.settings || EMPTY_SETTINGS)
-  }, [])
+  const queryClient = useQueryClient()
+  const authed = authStatus === 'authed'
+  const rangeStart = addDaysISO(selectedDate, -(TREND_DAYS - 1))
 
   useEffect(() => {
     let cancelled = false
     async function bootstrapFromExistingSession() {
       try {
         await api.refresh()
-        if (cancelled) return
-        await loadBootstrap()
         if (!cancelled) setAuthStatus('authed')
       } catch {
         if (!cancelled) setAuthStatus('anon')
@@ -51,108 +41,202 @@ export function AppProvider({ children }) {
     return () => {
       cancelled = true
     }
-  }, [loadBootstrap])
+  }, [])
+
+  const bootstrapQuery = useQuery({
+    queryKey: ['bootstrap'],
+    queryFn: api.getBootstrap,
+    enabled: authed,
+  })
+  const foods = bootstrapQuery.data?.foods || []
+  const meals = bootstrapQuery.data?.meals || []
+  const settings = bootstrapQuery.data?.settings || EMPTY_SETTINGS
+
+  // Logs for the trend window (ending on selectedDate) cover today's entries,
+  // yesterday's (for the "copy yesterday" prompt), and the weekly chart —
+  // never the user's whole history.
+  const logsQuery = useQuery({
+    queryKey: ['logs', rangeStart, selectedDate],
+    queryFn: () => api.getLogsForRange(rangeStart, selectedDate),
+    enabled: authed,
+  })
+  const logs = logsQuery.data || []
+
+  const loggedDatesQuery = useQuery({
+    queryKey: ['loggedDates'],
+    queryFn: api.getLoggedDates,
+    enabled: authed,
+  })
+  const loggedDates = useMemo(() => new Set(loggedDatesQuery.data || []), [loggedDatesQuery.data])
+
+  const waterQuery = useQuery({
+    queryKey: ['water', selectedDate],
+    queryFn: () => api.getWater(selectedDate),
+    enabled: authed,
+  })
+  const waterMl = waterQuery.data?.ml || 0
+
+  const invalidateLogs = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['logs'] })
+    queryClient.invalidateQueries({ queryKey: ['loggedDates'] })
+  }, [queryClient])
 
   const login = useCallback(
     async (username, password) => {
       setAuthError('')
       try {
         await api.login(username, password)
-        await loadBootstrap()
         setAuthStatus('authed')
       } catch (err) {
         setAuthError(err.message || 'Login failed')
         throw err
       }
     },
-    [loadBootstrap],
+    [],
   )
 
   const logout = useCallback(async () => {
     try {
       await api.logout()
     } finally {
-      setFoods([])
-      setLogs([])
-      setMeals([])
-      setWater({})
-      setSettings(EMPTY_SETTINGS)
+      queryClient.clear()
       setAuthStatus('anon')
     }
-  }, [])
+  }, [queryClient])
+
+  const addFoodMutation = useMutation({
+    mutationFn: api.createFood,
+    onSuccess: (created) => {
+      queryClient.setQueryData(['bootstrap'], (prev) => prev && { ...prev, foods: [...prev.foods, created] })
+    },
+  })
+  const addFoodsMutation = useMutation({
+    mutationFn: api.bulkCreateFoods,
+    onSuccess: (result) => {
+      if (result.foods?.length) {
+        queryClient.setQueryData(['bootstrap'], (prev) => prev && { ...prev, foods: [...prev.foods, ...result.foods] })
+      }
+    },
+  })
+  const updateFoodMutation = useMutation({
+    mutationFn: ({ id, patch }) => api.updateFood(id, patch),
+    onSuccess: (updated, { id }) => {
+      queryClient.setQueryData(['bootstrap'], (prev) => prev && {
+        ...prev,
+        foods: prev.foods.map((f) => (f.id === id ? updated : f)),
+      })
+    },
+  })
+  const deleteFoodMutation = useMutation({
+    mutationFn: api.deleteFood,
+    onSuccess: (_, id) => {
+      queryClient.setQueryData(['bootstrap'], (prev) => prev && {
+        ...prev,
+        foods: prev.foods.filter((f) => f.id !== id),
+      })
+    },
+  })
+
+  const addLogEntryMutation = useMutation({
+    mutationFn: api.createLog,
+    onSuccess: invalidateLogs,
+  })
+  const updateLogEntryMutation = useMutation({
+    mutationFn: ({ id, patch }) => api.updateLog(id, patch),
+    onSuccess: invalidateLogs,
+  })
+  const removeLogEntryMutation = useMutation({
+    mutationFn: api.deleteLog,
+    onSuccess: invalidateLogs,
+  })
+  const copyDayMutation = useMutation({
+    mutationFn: ({ fromISO, toISO }) => api.copyDay(fromISO, toISO),
+    onSuccess: invalidateLogs,
+  })
+
+  const importDayMutation = useMutation({
+    mutationFn: api.importDay,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bootstrap'] })
+      invalidateLogs()
+      queryClient.invalidateQueries({ queryKey: ['water'] })
+    },
+  })
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: api.updateSettings,
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['bootstrap'], (prev) => prev && { ...prev, settings: updated })
+    },
+  })
+
+  const setWaterMutation = useMutation({
+    mutationFn: ({ date, ml }) => api.setWater(date, ml),
+    onSuccess: (updated, { date }) => {
+      queryClient.setQueryData(['water', date], updated)
+    },
+  })
+
+  const addMealMutation = useMutation({
+    mutationFn: api.createMeal,
+    onSuccess: (created) => {
+      queryClient.setQueryData(['bootstrap'], (prev) => prev && { ...prev, meals: [...prev.meals, created] })
+    },
+  })
+  const updateMealMutation = useMutation({
+    mutationFn: ({ id, patch }) => api.updateMeal(id, patch),
+    onSuccess: (updated, { id }) => {
+      queryClient.setQueryData(['bootstrap'], (prev) => prev && {
+        ...prev,
+        meals: prev.meals.map((m) => (m.id === id ? updated : m)),
+      })
+    },
+  })
+  const deleteMealMutation = useMutation({
+    mutationFn: api.deleteMeal,
+    onSuccess: (_, id) => {
+      queryClient.setQueryData(['bootstrap'], (prev) => prev && {
+        ...prev,
+        meals: prev.meals.filter((m) => m.id !== id),
+      })
+    },
+  })
 
   const actions = useMemo(
     () => ({
-      async addFood(food) {
-        const created = await api.createFood(food)
-        setFoods((prev) => [...prev, created])
-        return created
-      },
-      async addFoods(newFoods) {
-        const result = await api.bulkCreateFoods(newFoods)
-        if (result.foods?.length) setFoods((prev) => [...prev, ...result.foods])
-        return { added: result.added, skipped: result.skipped }
-      },
-      async updateFood(id, patch) {
-        const updated = await api.updateFood(id, patch)
-        setFoods((prev) => prev.map((f) => (f.id === id ? updated : f)))
-        return updated
-      },
-      async deleteFood(id) {
-        await api.deleteFood(id)
-        setFoods((prev) => prev.filter((f) => f.id !== id))
-      },
-      async addLogEntry(entry) {
-        const created = await api.createLog(entry)
-        setLogs((prev) => [...prev, created])
-        return created
-      },
-      async updateLogEntry(id, patch) {
-        const updated = await api.updateLog(id, patch)
-        setLogs((prev) => prev.map((e) => (e.id === id ? updated : e)))
-        return updated
-      },
-      async removeLogEntry(id) {
-        await api.deleteLog(id)
-        setLogs((prev) => prev.filter((e) => e.id !== id))
-      },
-      async copyDay(fromISO, toISO) {
-        const copies = await api.copyDay(fromISO, toISO)
-        if (copies?.length) setLogs((prev) => [...prev, ...copies])
-        return copies?.length || 0
-      },
-      async importDayData(payload) {
-        const result = await api.importDay(payload)
-        await loadBootstrap()
-        return result
-      },
-      async updateSettings(patch) {
-        const updated = await api.updateSettings(patch)
-        setSettings(updated)
-        return updated
-      },
-      async setWaterForDate(dateISO, ml) {
-        const clamped = Math.max(0, ml)
-        const updated = await api.setWater(dateISO, clamped)
-        setWater((prev) => ({ ...prev, [dateISO]: updated.ml }))
-      },
-      async addMealType(meal) {
-        const created = await api.createMeal(meal)
-        setMeals((prev) => [...prev, created])
-        return created
-      },
-      async updateMealType(id, patch) {
-        const updated = await api.updateMeal(id, patch)
-        setMeals((prev) => prev.map((m) => (m.id === id ? updated : m)))
-        return updated
-      },
-      async deleteMealType(id) {
-        await api.deleteMeal(id)
-        setMeals((prev) => prev.filter((m) => m.id !== id))
-      },
+      addFood: (food) => addFoodMutation.mutateAsync(food),
+      addFoods: (newFoods) => addFoodsMutation.mutateAsync(newFoods),
+      updateFood: (id, patch) => updateFoodMutation.mutateAsync({ id, patch }),
+      deleteFood: (id) => deleteFoodMutation.mutateAsync(id),
+      addLogEntry: (entry) => addLogEntryMutation.mutateAsync(entry),
+      updateLogEntry: (id, patch) => updateLogEntryMutation.mutateAsync({ id, patch }),
+      removeLogEntry: (id) => removeLogEntryMutation.mutateAsync(id),
+      copyDay: (fromISO, toISO) => copyDayMutation.mutateAsync({ fromISO, toISO }),
+      importDayData: (payload) => importDayMutation.mutateAsync(payload),
+      updateSettings: (patch) => updateSettingsMutation.mutateAsync(patch),
+      setWaterForDate: (dateISO, ml) => setWaterMutation.mutateAsync({ date: dateISO, ml: Math.max(0, ml) }),
+      addMealType: (meal) => addMealMutation.mutateAsync(meal),
+      updateMealType: (id, patch) => updateMealMutation.mutateAsync({ id, patch }),
+      deleteMealType: (id) => deleteMealMutation.mutateAsync(id),
       setSelectedDate,
     }),
-    [loadBootstrap, setSelectedDate],
+    [
+      addFoodMutation,
+      addFoodsMutation,
+      updateFoodMutation,
+      deleteFoodMutation,
+      addLogEntryMutation,
+      updateLogEntryMutation,
+      removeLogEntryMutation,
+      copyDayMutation,
+      importDayMutation,
+      updateSettingsMutation,
+      setWaterMutation,
+      addMealMutation,
+      updateMealMutation,
+      deleteMealMutation,
+      setSelectedDate,
+    ],
   )
 
   const value = useMemo(
@@ -163,13 +247,14 @@ export function AppProvider({ children }) {
       logout,
       foods,
       logs,
+      loggedDates,
       meals,
       settings,
-      water,
+      water: waterMl,
       selectedDate,
       ...actions,
     }),
-    [authStatus, authError, login, logout, foods, logs, meals, settings, water, selectedDate, actions],
+    [authStatus, authError, login, logout, foods, logs, loggedDates, meals, settings, waterMl, selectedDate, actions],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

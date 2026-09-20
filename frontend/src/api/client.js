@@ -76,6 +76,12 @@ export async function logout() {
 
 export const getBootstrap = () => request('/api/bootstrap')
 
+export const getLogsForDate = (date) => request(`/api/logs?date=${date}`)
+export const getLogsForRange = (start, end) => request(`/api/logs?start=${start}&end=${end}`)
+export const getLoggedDates = () => request('/api/logs/dates')
+
+export const getWater = (date) => request(`/api/water/${date}`)
+
 export const createFood = (food) => request('/api/foods', { method: 'POST', body: food })
 export const bulkCreateFoods = (foods) => request('/api/foods/bulk', { method: 'POST', body: { foods } })
 export const updateFood = (id, patch) => request(`/api/foods/${id}`, { method: 'PATCH', body: patch })

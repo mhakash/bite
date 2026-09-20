@@ -26,19 +26,11 @@ func (s *Store) Bootstrap(userID int64) (models.Bootstrap, error) {
 	if err != nil {
 		return models.Bootstrap{}, err
 	}
-	logs, err := s.ListLogs(userID)
-	if err != nil {
-		return models.Bootstrap{}, err
-	}
-	water, err := s.ListWater(userID)
-	if err != nil {
-		return models.Bootstrap{}, err
-	}
 	settings, err := s.GetSettings(userID)
 	if err != nil {
 		return models.Bootstrap{}, err
 	}
-	return models.Bootstrap{Foods: foods, Meals: meals, Logs: logs, Water: water, Settings: settings}, nil
+	return models.Bootstrap{Foods: foods, Meals: meals, Settings: settings}, nil
 }
 
 func (s *Store) GetSettings(userID int64) (models.Settings, error) {
@@ -214,30 +206,6 @@ func (s *Store) DeleteMeal(userID int64, id string) error {
 
 // --- log entries ---
 
-func (s *Store) ListLogs(userID int64) ([]models.LogEntry, error) {
-	rows, err := s.db.Query(
-		`SELECT id, date, meal, food_id, portion_id, quantity, custom_grams, created_at FROM log_entries WHERE user_id = ? ORDER BY created_at`,
-		userID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	logs := []models.LogEntry{}
-	for rows.Next() {
-		var e models.LogEntry
-		var customGrams sql.NullFloat64
-		if err := rows.Scan(&e.ID, &e.Date, &e.Meal, &e.FoodID, &e.PortionID, &e.Quantity, &customGrams, &e.CreatedAt); err != nil {
-			return nil, err
-		}
-		if customGrams.Valid {
-			e.CustomGrams = &customGrams.Float64
-		}
-		logs = append(logs, e)
-	}
-	return logs, rows.Err()
-}
-
 func (s *Store) InsertLogEntry(userID int64, e models.LogEntry) error {
 	var customGrams any
 	if e.CustomGrams != nil {
@@ -307,24 +275,64 @@ func (s *Store) LogsForDate(userID int64, date string) ([]models.LogEntry, error
 	return entries, rows.Err()
 }
 
-// --- water ---
-
-func (s *Store) ListWater(userID int64) (map[string]float64, error) {
-	rows, err := s.db.Query(`SELECT date, ml FROM water_logs WHERE user_id = ?`, userID)
+// LogsForDateRange returns log entries between start and end (inclusive),
+// e.g. for the weekly trend chart. Callers should keep the range small —
+// this loads every matching row into memory.
+func (s *Store) LogsForDateRange(userID int64, start, end string) ([]models.LogEntry, error) {
+	rows, err := s.db.Query(
+		`SELECT id, date, meal, food_id, portion_id, quantity, custom_grams, created_at FROM log_entries WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY created_at`,
+		userID, start, end,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	water := map[string]float64{}
+	entries := []models.LogEntry{}
 	for rows.Next() {
-		var date string
-		var ml float64
-		if err := rows.Scan(&date, &ml); err != nil {
+		var e models.LogEntry
+		var customGrams sql.NullFloat64
+		if err := rows.Scan(&e.ID, &e.Date, &e.Meal, &e.FoodID, &e.PortionID, &e.Quantity, &customGrams, &e.CreatedAt); err != nil {
 			return nil, err
 		}
-		water[date] = ml
+		if customGrams.Valid {
+			e.CustomGrams = &customGrams.Float64
+		}
+		entries = append(entries, e)
 	}
-	return water, rows.Err()
+	return entries, rows.Err()
+}
+
+// LoggedDates returns every distinct date the user has a log entry on, used
+// to compute the logging streak without loading the entries themselves.
+func (s *Store) LoggedDates(userID int64) ([]string, error) {
+	rows, err := s.db.Query(`SELECT DISTINCT date FROM log_entries WHERE user_id = ?`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	dates := []string{}
+	for rows.Next() {
+		var date string
+		if err := rows.Scan(&date); err != nil {
+			return nil, err
+		}
+		dates = append(dates, date)
+	}
+	return dates, rows.Err()
+}
+
+// --- water ---
+
+func (s *Store) WaterForDate(userID int64, date string) (float64, error) {
+	var ml float64
+	err := s.db.QueryRow(`SELECT ml FROM water_logs WHERE user_id = ? AND date = ?`, userID, date).Scan(&ml)
+	if err == sql.ErrNoRows {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	return ml, nil
 }
 
 func (s *Store) SetWater(userID int64, date string, ml float64) error {

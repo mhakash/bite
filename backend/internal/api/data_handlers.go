@@ -196,6 +196,45 @@ func (a *API) handleDeleteMeal(w http.ResponseWriter, r *http.Request) {
 
 // --- log entries ---
 
+// handleListLogs returns log entries for a single day (?date=YYYY-MM-DD) or
+// a date range (?start=YYYY-MM-DD&end=YYYY-MM-DD), e.g. for the weekly trend
+// chart. It never returns a user's whole history at once.
+func (a *API) handleListLogs(w http.ResponseWriter, r *http.Request) {
+	userID, _ := userIDFromContext(r.Context())
+	date := r.URL.Query().Get("date")
+	start := r.URL.Query().Get("start")
+	end := r.URL.Query().Get("end")
+
+	var (
+		entries []models.LogEntry
+		err     error
+	)
+	switch {
+	case date != "":
+		entries, err = a.store.LogsForDate(userID, date)
+	case start != "" && end != "":
+		entries, err = a.store.LogsForDateRange(userID, start, end)
+	default:
+		writeError(w, http.StatusBadRequest, "date or start/end query parameter required")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load logs")
+		return
+	}
+	writeJSON(w, http.StatusOK, entries)
+}
+
+func (a *API) handleLoggedDates(w http.ResponseWriter, r *http.Request) {
+	userID, _ := userIDFromContext(r.Context())
+	dates, err := a.store.LoggedDates(userID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load logged dates")
+		return
+	}
+	writeJSON(w, http.StatusOK, dates)
+}
+
 func (a *API) handleCreateLog(w http.ResponseWriter, r *http.Request) {
 	userID, _ := userIDFromContext(r.Context())
 	var e models.LogEntry
@@ -281,6 +320,17 @@ func (a *API) handleCopyDay(w http.ResponseWriter, r *http.Request) {
 }
 
 // --- water ---
+
+func (a *API) handleGetWater(w http.ResponseWriter, r *http.Request) {
+	userID, _ := userIDFromContext(r.Context())
+	date := r.PathValue("date")
+	ml, err := a.store.WaterForDate(userID, date)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load water")
+		return
+	}
+	writeJSON(w, http.StatusOK, setWaterRequest{Ml: ml})
+}
 
 type setWaterRequest struct {
 	Ml float64 `json:"ml"`

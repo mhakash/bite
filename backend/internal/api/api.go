@@ -58,11 +58,14 @@ func (a *API) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("PATCH /api/meals/{id}", a.requireAuth(a.handleUpdateMeal))
 	mux.HandleFunc("DELETE /api/meals/{id}", a.requireAuth(a.handleDeleteMeal))
 
+	mux.HandleFunc("GET /api/logs", a.requireAuth(a.handleListLogs))
+	mux.HandleFunc("GET /api/logs/dates", a.requireAuth(a.handleLoggedDates))
 	mux.HandleFunc("POST /api/logs", a.requireAuth(a.handleCreateLog))
 	mux.HandleFunc("PATCH /api/logs/{id}", a.requireAuth(a.handleUpdateLog))
 	mux.HandleFunc("DELETE /api/logs/{id}", a.requireAuth(a.handleDeleteLog))
 	mux.HandleFunc("POST /api/logs/copy", a.requireAuth(a.handleCopyDay))
 
+	mux.HandleFunc("GET /api/water/{date}", a.requireAuth(a.handleGetWater))
 	mux.HandleFunc("PUT /api/water/{date}", a.requireAuth(a.handleSetWater))
 
 	mux.HandleFunc("PATCH /api/settings", a.requireAuth(a.handleUpdateSettings))
