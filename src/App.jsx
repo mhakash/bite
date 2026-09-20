@@ -11,6 +11,8 @@ import WeeklyTrend from './components/WeeklyTrend'
 import SettingsSheet from './components/SettingsSheet'
 import { addDaysISO, todayISO } from './utils/date'
 import { nutrientsForEntry, sumNutrients } from './utils/nutrition'
+import { buildDayExport, buildFoodLibraryExport, downloadJson, parseDayImport, readFileAsText } from './utils/exportImport'
+import { parseFoodJson } from './utils/foodJson'
 import './App.css'
 
 function computeStreak(logs, fromISO) {
@@ -28,12 +30,14 @@ function TrackerScreen() {
   const {
     foods, logs, settings, water, selectedDate,
     addLogEntry, removeLogEntry, addFood, addFoods, updateSettings, setWaterForDate, setSelectedDate, copyDay,
+    importDayData,
   } = useApp()
 
   const [addSheetMeal, setAddSheetMeal] = useState(null)
   const [foodFormOpen, setFoodFormOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [pendingMealForNewFood, setPendingMealForNewFood] = useState(null)
+  const [dataNotice, setDataNotice] = useState('')
 
   const dayEntries = useMemo(() => logs.filter((e) => e.date === selectedDate), [logs, selectedDate])
 
@@ -95,6 +99,37 @@ function TrackerScreen() {
   function handleImportMany(foodsData) {
     addFoods(foodsData)
     setPendingMealForNewFood(null)
+  }
+
+  function handleExportDay() {
+    const data = buildDayExport(selectedDate, dayEntries, foods, water[selectedDate])
+    downloadJson(`bite-day-${selectedDate}.json`, data)
+  }
+
+  async function handleImportDayFile(file) {
+    try {
+      const text = await readFileAsText(file)
+      const parsed = parseDayImport(text)
+      const result = importDayData(parsed)
+      setDataNotice(`Imported ${result.addedEntries} entr${result.addedEntries === 1 ? 'y' : 'ies'} for ${parsed.date}${result.addedFoods ? ` (+${result.addedFoods} new food${result.addedFoods === 1 ? '' : 's'})` : ''}.`)
+    } catch (err) {
+      setDataNotice(err.message)
+    }
+  }
+
+  function handleExportFoods() {
+    downloadJson('bite-foods.json', buildFoodLibraryExport(foods))
+  }
+
+  async function handleImportFoodsFile(file) {
+    try {
+      const text = await readFileAsText(file)
+      const parsedFoods = parseFoodJson(text)
+      const result = addFoods(parsedFoods)
+      setDataNotice(`Added ${result.added} food${result.added === 1 ? '' : 's'}${result.skipped ? `, skipped ${result.skipped} already in your library` : ''}.`)
+    } catch (err) {
+      setDataNotice(err.message)
+    }
   }
 
   return (
@@ -168,8 +203,20 @@ function TrackerScreen() {
       <SettingsSheet
         open={settingsOpen}
         settings={settings}
-        onClose={() => setSettingsOpen(false)}
+        selectedDate={selectedDate}
+        dayEntryCount={dayEntries.length}
+        foodCount={foods.length}
+        notice={dataNotice}
+        onDismissNotice={() => setDataNotice('')}
+        onClose={() => {
+          setSettingsOpen(false)
+          setDataNotice('')
+        }}
         onSave={updateSettings}
+        onExportDay={handleExportDay}
+        onImportDayFile={handleImportDayFile}
+        onExportFoods={handleExportFoods}
+        onImportFoodsFile={handleImportFoodsFile}
       />
     </div>
   )

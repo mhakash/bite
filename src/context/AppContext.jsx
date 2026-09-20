@@ -37,9 +37,19 @@ export function AppProvider({ children }) {
       return withId
     },
     addFoods(newFoods) {
-      const withIds = newFoods.map((food) => ({ ...food, id: food.id || `f-${uuid()}` }))
-      setFoods((prev) => [...prev, ...withIds])
-      return withIds
+      const existingNames = new Set(foods.map((f) => f.name.toLowerCase()))
+      const toAdd = []
+      let skipped = 0
+      for (const food of newFoods) {
+        if (existingNames.has(food.name.toLowerCase())) {
+          skipped += 1
+          continue
+        }
+        existingNames.add(food.name.toLowerCase())
+        toAdd.push({ ...food, id: `f-${uuid()}` })
+      }
+      if (toAdd.length) setFoods((prev) => [...prev, ...toAdd])
+      return { added: toAdd.length, skipped }
     },
     updateFood(id, patch) {
       setFoods((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)))
@@ -64,6 +74,36 @@ export function AppProvider({ children }) {
       setLogs((prev) => [...prev, ...copies])
       return copies.length
     },
+    // Imports a day-export snapshot: merges its foods (skipping any that
+    // match an existing food by name) and adds its entries under `date`.
+    importDayData({ date, waterMl, entries, foods: importedFoods }) {
+      const idMap = {}
+      const toAdd = []
+      for (const food of importedFoods) {
+        const existing = foods.find((f) => f.name.toLowerCase() === food.name.toLowerCase())
+        if (existing) {
+          idMap[food.id] = existing.id
+        } else {
+          const newId = `f-${uuid()}`
+          idMap[food.id] = newId
+          toAdd.push({ ...food, id: newId })
+        }
+      }
+      if (toAdd.length) setFoods((prev) => [...prev, ...toAdd])
+
+      const newEntries = entries.map((e) => ({
+        ...e,
+        id: `e-${uuid()}`,
+        foodId: idMap[e.foodId] || e.foodId,
+        date,
+        createdAt: Date.now(),
+      }))
+      setLogs((prev) => [...prev, ...newEntries])
+
+      if (waterMl) setWater((prev) => ({ ...prev, [date]: waterMl }))
+
+      return { addedFoods: toAdd.length, addedEntries: newEntries.length }
+    },
     updateSettings(patch) {
       setSettings((prev) => ({ ...prev, ...patch }))
     },
@@ -71,7 +111,7 @@ export function AppProvider({ children }) {
       setWater((prev) => ({ ...prev, [dateISO]: Math.max(0, ml) }))
     },
     setSelectedDate,
-  }), [logs, setFoods, setLogs, setSettings, setWater, setSelectedDate])
+  }), [foods, logs, setFoods, setLogs, setSettings, setWater, setSelectedDate])
 
   const value = useMemo(() => ({
     foods,
