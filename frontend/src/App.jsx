@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { AppProvider, useApp, MEALS } from './context/AppContext'
+import { AppProvider, useApp } from './context/AppContext'
+import Login from './components/Login'
 import DayHeader from './components/DayHeader'
 import CalorieHero from './components/CalorieHero'
 import MealSection from './components/MealSection'
@@ -28,9 +29,9 @@ function computeStreak(logs, fromISO) {
 
 function TrackerScreen() {
   const {
-    foods, logs, settings, water, selectedDate,
+    foods, logs, meals, settings, water, selectedDate,
     addLogEntry, removeLogEntry, addFood, addFoods, updateSettings, setWaterForDate, setSelectedDate, copyDay,
-    importDayData,
+    importDayData, addMealType, updateMealType, deleteMealType, logout,
   } = useApp()
 
   const [addSheetMeal, setAddSheetMeal] = useState(null)
@@ -70,8 +71,8 @@ function TrackerScreen() {
     setAddSheetMeal(mealId)
   }
 
-  function handleLog(payload) {
-    addLogEntry({ ...payload, date: selectedDate })
+  async function handleLog(payload) {
+    await addLogEntry({ ...payload, date: selectedDate })
     setAddSheetMeal(null)
   }
 
@@ -81,11 +82,11 @@ function TrackerScreen() {
     setFoodFormOpen(true)
   }
 
-  function handleSaveFood(foodData) {
-    const created = addFood(foodData)
+  async function handleSaveFood(foodData) {
+    const created = await addFood(foodData)
     setFoodFormOpen(false)
     if (pendingMealForNewFood) {
-      addLogEntry({
+      await addLogEntry({
         foodId: created.id,
         portionId: created.defaultPortionId,
         quantity: 1,
@@ -96,8 +97,8 @@ function TrackerScreen() {
     }
   }
 
-  function handleImportMany(foodsData) {
-    addFoods(foodsData)
+  async function handleImportMany(foodsData) {
+    await addFoods(foodsData)
     setPendingMealForNewFood(null)
   }
 
@@ -110,7 +111,7 @@ function TrackerScreen() {
     try {
       const text = await readFileAsText(file)
       const parsed = parseDayImport(text)
-      const result = importDayData(parsed)
+      const result = await importDayData(parsed)
       setDataNotice(`Imported ${result.addedEntries} entr${result.addedEntries === 1 ? 'y' : 'ies'} for ${parsed.date}${result.addedFoods ? ` (+${result.addedFoods} new food${result.addedFoods === 1 ? '' : 's'})` : ''}.`)
     } catch (err) {
       setDataNotice(err.message)
@@ -125,7 +126,7 @@ function TrackerScreen() {
     try {
       const text = await readFileAsText(file)
       const parsedFoods = parseFoodJson(text)
-      const result = addFoods(parsedFoods)
+      const result = await addFoods(parsedFoods)
       setDataNotice(`Added ${result.added} food${result.added === 1 ? '' : 's'}${result.skipped ? `, skipped ${result.skipped} already in your library` : ''}.`)
     } catch (err) {
       setDataNotice(err.message)
@@ -150,7 +151,7 @@ function TrackerScreen() {
       )}
 
       <div className="meal-list">
-        {MEALS.map((meal) => (
+        {meals.map((meal) => (
           <MealSection
             key={meal.id}
             meal={meal}
@@ -207,6 +208,10 @@ function TrackerScreen() {
         dayEntryCount={dayEntries.length}
         foodCount={foods.length}
         notice={dataNotice}
+        meals={meals}
+        onAddMeal={addMealType}
+        onUpdateMeal={updateMealType}
+        onDeleteMeal={deleteMealType}
         onDismissNotice={() => setDataNotice('')}
         onClose={() => {
           setSettingsOpen(false)
@@ -217,15 +222,28 @@ function TrackerScreen() {
         onImportDayFile={handleImportDayFile}
         onExportFoods={handleExportFoods}
         onImportFoodsFile={handleImportFoodsFile}
+        onLogout={logout}
       />
     </div>
   )
 }
 
+function AuthGate() {
+  const { authStatus } = useApp()
+
+  if (authStatus === 'checking') {
+    return <div className="app-loading">Loading…</div>
+  }
+  if (authStatus === 'anon') {
+    return <Login />
+  }
+  return <TrackerScreen />
+}
+
 export default function App() {
   return (
     <AppProvider>
-      <TrackerScreen />
+      <AuthGate />
     </AppProvider>
   )
 }

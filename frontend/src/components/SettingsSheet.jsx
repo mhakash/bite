@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Sheet from './Sheet'
 import IconButton from './IconButton'
+import MealIcon from './MealIcon'
 import { formatDisplayDate } from '../utils/date'
 import './SettingsSheet.css'
 
@@ -12,6 +13,8 @@ const FIELDS = [
   { key: 'waterGoalMl', label: 'Water goal', unit: 'ml' },
 ]
 
+const MEAL_ICONS = ['sunrise', 'sun', 'moon', 'sparkle']
+
 export default function SettingsSheet({
   open,
   settings,
@@ -19,6 +22,10 @@ export default function SettingsSheet({
   dayEntryCount,
   foodCount,
   notice,
+  meals,
+  onAddMeal,
+  onUpdateMeal,
+  onDeleteMeal,
   onDismissNotice,
   onClose,
   onSave,
@@ -26,14 +33,25 @@ export default function SettingsSheet({
   onImportDayFile,
   onExportFoods,
   onImportFoodsFile,
+  onLogout,
 }) {
   const [form, setForm] = useState(settings)
+  const [newMealLabel, setNewMealLabel] = useState('')
+  const [newMealIcon, setNewMealIcon] = useState('sparkle')
   const dayFileInput = useRef(null)
   const foodsFileInput = useRef(null)
 
   useEffect(() => {
     if (open) setForm(settings)
   }, [open, settings])
+
+  function handleAddMeal() {
+    const label = newMealLabel.trim()
+    if (!label) return
+    onAddMeal({ label, icon: newMealIcon })
+    setNewMealLabel('')
+    setNewMealIcon('sparkle')
+  }
 
   function handleSave() {
     onSave(form)
@@ -78,6 +96,61 @@ export default function SettingsSheet({
             </div>
           </label>
         ))}
+
+        <div className="settings-divider" />
+
+        <div className="data-section">
+          <h4 className="data-section__title">Meal sections</h4>
+          <span className="field__hint">Customize which meal sections show up on your daily log</span>
+
+          {meals?.map((meal) => (
+            <div className="meal-row" key={meal.id}>
+              <MealIcon icon={meal.icon} size={24} />
+              <input
+                className="meal-row__label"
+                value={meal.label}
+                onChange={(e) => onUpdateMeal(meal.id, { label: e.target.value })}
+              />
+              <select
+                className="meal-row__icon-select"
+                value={meal.icon}
+                onChange={(e) => onUpdateMeal(meal.id, { icon: e.target.value })}
+              >
+                {MEAL_ICONS.map((icon) => (
+                  <option key={icon} value={icon}>{icon}</option>
+                ))}
+              </select>
+              <IconButton
+                icon="close"
+                variant="subtle"
+                size={28}
+                onClick={() => onDeleteMeal(meal.id)}
+                aria-label={`Remove ${meal.label}`}
+              />
+            </div>
+          ))}
+
+          <div className="meal-row meal-row--new">
+            <input
+              className="meal-row__label"
+              placeholder="New meal name"
+              value={newMealLabel}
+              onChange={(e) => setNewMealLabel(e.target.value)}
+            />
+            <select
+              className="meal-row__icon-select"
+              value={newMealIcon}
+              onChange={(e) => setNewMealIcon(e.target.value)}
+            >
+              {MEAL_ICONS.map((icon) => (
+                <option key={icon} value={icon}>{icon}</option>
+              ))}
+            </select>
+            <button className="field__add-link" onClick={handleAddMeal} disabled={!newMealLabel.trim()}>
+              + Add
+            </button>
+          </div>
+        </div>
 
         <div className="settings-divider" />
 
@@ -156,9 +229,13 @@ export default function SettingsSheet({
         </div>
 
         <p className="settings-note">
-          Your data lives only in this browser's local storage. Clearing site data will erase it, so export
-          important logs elsewhere if you need a backup.
+          Your data is stored on your Bite server. Export important logs from time to time if you want an
+          offline backup.
         </p>
+
+        <button className="settings-logout" onClick={onLogout}>
+          Sign out
+        </button>
       </div>
     </Sheet>
   )
