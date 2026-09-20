@@ -11,3 +11,4 @@ backend/*.db-journal
 backend/*.db-wal
 backend/*.db-shm
 backend/.env
+backend/deploy/deploy.env

@@ -2,11 +2,14 @@
 # Restores the most recent bite-server.bak-* binary on the droplet and
 # restarts bite.service. Use after a deploy.sh that broke something.
 #
-# Config (env vars, all optional): same as deploy.sh.
+# Config: same as deploy.sh (DROPLET_HOST required, reads deploy.env if present).
 set -euo pipefail
 
-DROPLET_HOST="${DROPLET_HOST:-root@REDACTED-DROPLET-IP}"
-SSH_KEY="${SSH_KEY:-$HOME/.ssh/digitalocean}"
+cd "$(dirname "$0")"
+[ -f deploy.env ] && source deploy.env
+
+: "${DROPLET_HOST:?Set DROPLET_HOST (e.g. root@1.2.3.4), or copy deploy.env.example to deploy.env}"
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_rsa}"
 REMOTE_DIR="${REMOTE_DIR:-/opt/bite}"
 
 ssh -i "$SSH_KEY" "$DROPLET_HOST" REMOTE_DIR="$REMOTE_DIR" bash -s <<'REMOTE'

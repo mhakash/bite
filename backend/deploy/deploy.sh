@@ -1,21 +1,27 @@
 #!/usr/bin/env bash
 # Builds the backend for linux/amd64 and deploys it to the droplet running
-# bite.service. See ../../README.md "Deploying" for the full setup this
-# assumes (systemd unit, env file, nginx reverse proxy).
+# bite.service. See ../../docs/DEPLOYING.md for the full setup this assumes
+# (systemd unit, env file, nginx reverse proxy).
 #
-# Config (env vars, all optional):
-#   DROPLET_HOST   ssh target, e.g. root@1.2.3.4   (default: root@REDACTED-DROPLET-IP)
-#   SSH_KEY        private key path                (default: ~/.ssh/digitalocean)
+# Config (env vars, all optional except DROPLET_HOST):
+#   DROPLET_HOST   ssh target, e.g. root@1.2.3.4   (required)
+#   SSH_KEY        private key path                (default: ~/.ssh/id_rsa)
 #   REMOTE_DIR     app directory on the droplet     (default: /opt/bite)
 #   KEEP_BACKUPS   how many old binaries to keep    (default: 5)
+#
+# This repo is public, so real infra details (droplet IP, key path) are kept
+# out of version control. Set them via env vars, or copy deploy.env.example
+# to deploy.env (gitignored) and this script will source it automatically.
 set -euo pipefail
 
-DROPLET_HOST="${DROPLET_HOST:-root@REDACTED-DROPLET-IP}"
-SSH_KEY="${SSH_KEY:-$HOME/.ssh/digitalocean}"
+cd "$(dirname "$0")"
+[ -f deploy.env ] && source deploy.env
+cd ..
+
+: "${DROPLET_HOST:?Set DROPLET_HOST (e.g. root@1.2.3.4), or copy deploy/deploy.env.example to deploy/deploy.env}"
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_rsa}"
 REMOTE_DIR="${REMOTE_DIR:-/opt/bite}"
 KEEP_BACKUPS="${KEEP_BACKUPS:-5}"
-
-cd "$(dirname "$0")/.."
 
 echo "==> Building linux/amd64 binary"
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /tmp/bite-server-new ./cmd/server

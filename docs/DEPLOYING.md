@@ -11,7 +11,11 @@ Runs as `bite.service` (systemd) at `/opt/bite/bite-server`, config from
 (`bite.service`, `bite.env.example`, `nginx-bite.conf`) — not applied
 automatically, just documentation for re-provisioning.
 
-To ship a backend change:
+This repo is public, so the droplet's real IP and SSH key path are never
+committed. Copy `backend/deploy/deploy.env.example` to
+`backend/deploy/deploy.env` (gitignored) and fill in `DROPLET_HOST` /
+`SSH_KEY` — `deploy.sh` and `rollback.sh` source it automatically. You can
+also pass them as env vars instead:
 
 ```bash
 cd backend
@@ -20,9 +24,7 @@ DROPLET_HOST=root@your.droplet.ip SSH_KEY=~/.ssh/your_key ./deploy/deploy.sh
 
 This cross-compiles for `linux/amd64`, copies the binary over, backs up the
 previous one on the droplet as `bite-server.bak-<timestamp>` (keeping the
-last 5), and restarts `bite.service`. Defaults for `DROPLET_HOST`/`SSH_KEY`/
-`REMOTE_DIR` are baked into the script for this project's droplet — override
-via env vars if deploying elsewhere. If a deploy goes bad:
+last 5), and restarts `bite.service`. If a deploy goes bad:
 
 ```bash
 ./deploy/rollback.sh   # restores the most recent bite-server.bak-* and restarts
