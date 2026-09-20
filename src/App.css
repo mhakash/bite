@@ -1,0 +1,50 @@
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.08) 100%);
+  position: relative;
+}
+
+.meal-list {
+  margin: 8px 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.meal-list .meal-section:last-child {
+  border-bottom: none;
+}
+
+.copy-day-cta {
+  display: block;
+  margin: 4px 20px 4px;
+  width: calc(100% - 40px);
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px dashed var(--hairline-strong);
+  background: transparent;
+  color: var(--sky);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.copy-day-cta:hover {
+  background: rgba(79, 209, 197, 0.08);
+}
+
+.app-footer-space {
+  height: 24px;
+}
+
+@media (min-width: 481px) {
+  .app-shell {
+    box-shadow: 0 0 0 1px var(--hairline), 0 40px 100px rgba(0, 0, 0, 0.5);
+  }
+
+  body {
+    padding: 24px 0;
+  }
+}

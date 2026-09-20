@@ -1,0 +1,119 @@
+:root {
+  /* ---- palette ---- */
+  --ink: #14121a;
+  --ink-2: #1a1722;
+  --surface: #201c2b;
+  --surface-2: #292434;
+  --surface-3: #332c40;
+  --hairline: rgba(245, 240, 232, 0.09);
+  --hairline-strong: rgba(245, 240, 232, 0.18);
+
+  --cream: #f5f0e8;
+  --muted: #a79fb8;
+  --muted-2: #7b7390;
+
+  --mango: #ffb648;
+  --mango-2: #ff8a3d;
+  --berry: #ff5c8a;
+  --berry-2: #ff3d68;
+  --kiwi: #8bd450;
+  --kiwi-2: #5fbf3f;
+  --sky: #4fd1c5;
+  --sky-2: #37b5c9;
+
+  /* semantic */
+  --accent-calories: var(--mango);
+  --accent-protein: var(--berry);
+  --accent-carbs: var(--kiwi);
+  --accent-fat: var(--sky);
+
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: radial-gradient(circle at 15% -10%, #2a2338 0%, transparent 45%),
+    radial-gradient(circle at 100% 0%, #22303a 0%, transparent 40%), var(--ink);
+  color: var(--cream);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--mango);
+  color: var(--ink);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

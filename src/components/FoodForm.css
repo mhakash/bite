@@ -1,0 +1,234 @@
+.food-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.food-form-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.food-form-tab {
+  flex: 1;
+  padding: 9px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.food-form-tab--active {
+  background: var(--surface-3);
+  color: var(--cream);
+}
+
+.json-import {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.json-import__hint {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.json-import__textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--cream);
+  resize: vertical;
+  width: 100%;
+}
+
+.json-import__textarea::placeholder {
+  color: var(--muted-2);
+}
+
+.json-import__error {
+  font-size: 12.5px;
+  color: var(--berry);
+  background: rgba(255, 92, 138, 0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.json-import__notice {
+  font-size: 12.5px;
+  color: var(--kiwi);
+  background: rgba(139, 212, 80, 0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.json-prompt-box {
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.json-prompt-box__text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.field__hint {
+  font-size: 12px;
+  color: var(--muted-2);
+  margin-top: -4px;
+}
+
+.field input {
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-size: 14px;
+  color: var(--cream);
+  width: 100%;
+}
+
+.field input::placeholder {
+  color: var(--muted-2);
+}
+
+.color-swatches {
+  display: flex;
+  gap: 10px;
+}
+
+.color-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.color-swatch--active {
+  border-color: var(--cream);
+}
+
+.portion-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 30px;
+  gap: 8px;
+  align-items: center;
+}
+
+.portion-row__remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.portion-row__remove:disabled {
+  opacity: 0.3;
+}
+
+.field__add-link {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--sky);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.nutrient-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.nutrient-input {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nutrient-input span:first-child {
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
+.nutrient-input__row {
+  display: flex;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 10px;
+  padding: 0 10px;
+}
+
+.nutrient-input__row input {
+  background: none;
+  border: none;
+  padding: 9px 4px 9px 0;
+  width: 100%;
+  font-size: 13.5px;
+}
+
+.nutrient-input__unit {
+  font-size: 11px;
+  color: var(--muted-2);
+  flex-shrink: 0;
+}
+
+.food-form__save {
+  width: 100%;
+  padding: 15px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, var(--mango), var(--mango-2));
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.food-form__save:disabled {
+  opacity: 0.35;
+}

@@ -1,0 +1,77 @@
+.calorie-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 20px 8px;
+  gap: 24px;
+}
+
+.calorie-hero__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.calorie-hero__value {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cream);
+}
+
+.calorie-hero__unit {
+  font-size: 12.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+.calorie-hero__sub {
+  font-size: 12px;
+  color: var(--muted-2);
+  margin-top: 6px;
+}
+
+.macro-bars {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.macro-bar__top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.macro-bar__label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.macro-bar__value {
+  color: var(--cream);
+  font-weight: 600;
+}
+
+.macro-bar__goal {
+  color: var(--muted-2);
+  font-weight: 400;
+}
+
+.macro-bar__track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.macro-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+}
