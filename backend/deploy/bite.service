@@ -1,0 +1,18 @@
+# Reference copy of the systemd unit installed at
+# /etc/systemd/system/bite.service on the droplet. Not applied automatically
+# — this documents the running setup for anyone re-provisioning the server.
+[Unit]
+Description=Bite calorie tracker API
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/bite/bite-server
+EnvironmentFile=/etc/bite.env
+Restart=on-failure
+RestartSec=2
+User=root
+WorkingDirectory=/opt/bite
+
+[Install]
+WantedBy=multi-user.target
